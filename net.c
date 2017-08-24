@@ -4,7 +4,6 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "buf.h"
 #include "db.h"
 #include "net.h"
 

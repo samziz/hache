@@ -12,7 +12,11 @@ typedef struct Pair {
 	struct Pair* next;
 } Pair;
 
-int read_val_to_buf(char *key, char *val, Buf *b);
 int add_pair_to_db(char *key, char *val);
+int deserialise(char *buf, Pair *f);
+int read_until_null_byte(char *buf, char *s, int i);
+int read_val(char *key, char *val, char *buf);
+int remove_pair(char *key);
+int serialise(Pair *f, char *buf);
 
 #endif
