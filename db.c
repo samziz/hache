@@ -30,8 +30,8 @@ int deserialise(char *buf, Pair *f)
 
 	int i = 0;
 
-	i = read_until_null_byte(buf, (*f).key, i);
-	i = read_until_null_byte(buf, (*f).val, i);
+	i = read_until_null_byte(buf, f->key, i);
+	i = read_until_null_byte(buf, f->val, i);
 
 	Pair p;
 	(*f).next = &p;

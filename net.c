@@ -1,22 +1,56 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
+#include <sys/poll.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "db.h"
 #include "net.h"
 
+void conn_handler(void *arg)
+{
+    int conn = *((int *)arg);
+
+    if (conn < 0)
+    {   
+        close(conn);
+        return;
+    }
+
+    char *buf = malloc(10000);
+    memset(buf, 0, 10000);
+
+    if (read(conn, buf, 10000) < 0) {
+        printf(">> Message received but reading failed");
+        write(conn, "ERROR", 6);
+        close(conn);
+        return;
+    }
+
+    printf(">> Message received: %s\n", buf);
+
+    // Use separate thread to write 
+    write_sock_data_to_db(buf);
+
+    write(conn, "SUCCESS", 8);
+    close(conn);
+}
+
 /* Parse kv data and write to db */
-void write(void *ptr)
+void write_sock_data_to_db(void *ptr)
 {
     char *key, *val;
 
-    char *data = (char*)ptr;
+    char *data = ptr;
     int len = sizeof(data) / sizeof(data[0]);
 
     int i = 0;
 
+    // Read until null byte and write to key
     for (i = 0; i < len; i++) {
         if (data[i] == 0)
         {
@@ -26,6 +60,7 @@ void write(void *ptr)
         key[i] = data[i];
     }
 
+    // Read until null byte and write to val
     for (i = i; i < len; i++) {
         if (data[i] == 0)
         {
@@ -39,32 +74,50 @@ void write(void *ptr)
 }
 
 /* Listen on port and return a character buffer */
-char *listen_and_write(int port)
+void listen_and_write(int port)
 {
-    Buf buf;
-    memset(buf.data, 0, MAX_BUF_SIZE);
-
-   	int len, sock;
-   	struct sockaddr_in dest; 
-    pthread_t write_thread;
- 
+   	int new_conn, sock;
+    struct pollfd fds;
+   	struct sockaddr_in cli, serv;
+    
+    // Open TCP socket
    	sock = socket(AF_INET, SOCK_STREAM, 0);
-  
-   	memset(&dest, 0, sizeof(dest));
-   	dest.sin_family = AF_INET;
-   	dest.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-   	dest.sin_port = htons(port);
- 
-   	connect(sock, (struct sockaddr *)&dest, sizeof(struct sockaddr_in{}));
-  	
-  	while (1) 
-  	{
-  		recv(sock, buf.data, MAX_BUF_SIZE, 0);
+    if (sock < 0)
+    {
+        printf(">> Error opening socket\n");
+    }
 
-      // Use separate thread to write 
-      pthread_create(&write_thread, NULL, (void *)&write, (void *)&buf.data);
-      write_thread = 0;
+    // Initialise server address
+   	memset(&serv, 0, sizeof(serv));
+   	serv.sin_family = AF_INET;
+   	serv.sin_addr.s_addr = htons(INADDR_ANY);
+   	serv.sin_port = htons(port);
+      
+    // Initialise fd struct for polling
+    fds.fd = sock;
+    fds.events = POLLIN;
+
+    // Bind socket to port specified by user (default 7070)
+   	if (bind(sock, (struct sockaddr *)&serv, sizeof(serv)) < 0)
+    {
+        printf(">> Error on binding socket\n");
+    };
+    
+    if (listen(sock, 128) < 0)
+    {
+        printf(">> Error on listening\n");
+    };
+
+    printf(">> Listening on port %d\n", port);
+
+  	while (1)
+  	{
+        new_conn = accept(sock, (struct sockaddr *)NULL, (socklen_t *)NULL);
+
+        // Spawn thread to handle connection
+        pthread_t io_thread;
+        pthread_create(&io_thread, NULL, (void *)&conn_handler, (void *)&new_conn);
   	}
   
-   	return 0;
+   	return;
 }
