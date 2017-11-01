@@ -25,13 +25,10 @@ void conn_handler(void *arg)
     memset(buf, 0, 10000);
 
     if (read(conn, buf, 10000) < 0) {
-        printf(">> Message received but reading failed");
         write(conn, "ERROR", 6);
         close(conn);
         return;
     }
-
-    printf(">> Message received: %s\n", buf);
 
     // Use separate thread to write 
     write_sock_data_to_db(buf);
@@ -70,14 +67,13 @@ void write_sock_data_to_db(void *ptr)
         val[i] = data[i];
     }
 
-    add_pair_to_db(key, val);
+    // add_pair_to_db(key, val);
 }
 
 /* Listen on port and return a character buffer */
 void listen_and_write(int port)
 {
    	int new_conn, sock;
-    struct pollfd fds;
    	struct sockaddr_in cli, serv;
     
     // Open TCP socket
@@ -88,17 +84,13 @@ void listen_and_write(int port)
     }
 
     // Initialise server address
-   	memset(&serv, 0, sizeof(serv));
-   	serv.sin_family = AF_INET;
-   	serv.sin_addr.s_addr = htons(INADDR_ANY);
-   	serv.sin_port = htons(port);
-      
-    // Initialise fd struct for polling
-    fds.fd = sock;
-    fds.events = POLLIN;
+    memset(&serv, 0, sizeof(serv));
+    serv.sin_family = AF_INET;
+    serv.sin_addr.s_addr = htons(INADDR_ANY);
+    serv.sin_port = htons(port);
 
     // Bind socket to port specified by user (default 7070)
-   	if (bind(sock, (struct sockaddr *)&serv, sizeof(serv)) < 0)
+    if (bind(sock, (struct sockaddr *)&serv, sizeof(serv)) < 0)
     {
         printf(">> Error on binding socket\n");
     };
@@ -107,8 +99,6 @@ void listen_and_write(int port)
     {
         printf(">> Error on listening\n");
     };
-
-    printf(">> Listening on port %d\n", port);
 
   	while (1)
   	{

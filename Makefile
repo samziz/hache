@@ -4,7 +4,7 @@ COMPILER?=gcc
 FILESET?=*.c
 
 build:
-	$(COMPILER) $(FILESET) -o $(BINARY_NAME)
+	$(COMPILER) $(FILESET) -lreadline -o $(BINARY_NAME)
 	mv $(BINARY_NAME) $(BIN_DIR)
 
 local:
