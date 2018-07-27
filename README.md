@@ -13,5 +13,7 @@ Use the makefile, which compiles kvdb using the gcc compiler.
 The syntax is incredibly simple:
 
 **GET** [key]
+
 **SET** [key] [value]
+
 **DELETE** [key]
