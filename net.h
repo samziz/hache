@@ -1,8 +1,10 @@
 #ifndef NET_H
 #define NET_H
 
-void conn_handler(void *arg);
-void listen_and_write(int port);
-void write_sock_data_to_db(void *ptr);
+#define MAX_KEY_LENGTH 1000
+#define MAX_VALUE_LENGTH 10000
+
+int net_request(char *host, int port);
+void net_serve(HashTable *table, int port);
 
 #endif

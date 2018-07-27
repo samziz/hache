@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "db.h"
 #include "main.h"
 #include "net.h"
 #include "shell.h"
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
 	{
 		char *cmd = argv[1];
 		execute_command(cmd);
-	};
+	}
 
 	return 0;
 }
@@ -38,9 +39,14 @@ void execute_command(char *cmd)
 	if (strcmp(cmd, "start") == 0)
 	{
 		int pid = fork();
-		if (pid == 0) {
-			listen_and_write(7070);
-		} else {
+		
+		if (pid == 0) 
+		{
+			HashTable table;			
+			net_serve(&table, 7070);
+		} 
+		else 
+		{
 			printf(">> Launched database process\n");
 			exit(0);
 		}

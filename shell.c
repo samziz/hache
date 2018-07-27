@@ -30,7 +30,7 @@ char *parse_shell_command(char *args)
 {	
 	char *cmd = strtok(args, " ");
 	return cmd;
-};
+}
 
 int execute_shell_command(char *cmd)
 {
