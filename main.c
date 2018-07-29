@@ -41,16 +41,21 @@ void execute_command(char *cmd)
 	{
 		launch_local_service();
 	}
+
+	else
+	{
+		printf(">> Invalid command '%s'\n", cmd);
+	}
 }
 
 void launch_local_service()
 {
 	int pid = fork();
-		
+	
 	if (pid == 0) 
 	{
-		HashTable table;			
-		net_serve(&table, 7070);
+		HashTable *table = ht_make_table();
+		net_serve(table, 7070);
 		printf(">> Shutting down service\n");
 	}
 

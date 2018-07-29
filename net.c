@@ -75,7 +75,7 @@ void net_conn_handler(void *ptr)
         return;
     }
 
-    char *cmd = strtok(str, " ");
+    char *cmd = strtok(buf, " ");
     char *key = strtok(NULL, " ");
 
     if (strcmp(cmd, "GET") == 0)
@@ -146,12 +146,4 @@ void net_serve(HashTable *table, int port)
     };
   
     return;
-}
-
-/* Parse kv data and write to db */
-void net_write_to_db(HashTable *table, char *key, char *value)
-{
-    // FIXME: Check key and value validity
-
-    ht_add(table, key, val);
 }
