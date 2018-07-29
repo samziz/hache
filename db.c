@@ -6,14 +6,22 @@
 int ht_add(HashTable *table, char *key, char *value)
 {	
 	int hash = ht_hash(key);
-	table->entries[hash] = value;
+	Entry en = { key, value };
+	table->entries[hash] = en;
 	return 0;
 }
 
-char *ht_get(HashTable *table, char *key)
+Entry ht_get(HashTable *table, char *key)
 {
 	int hash = ht_hash(key);
-	return table->entries[hash];
+	Entry en = table->entries[hash];
+	
+	if (en.key != NULL)
+	{
+		return en;
+	}
+
+	return ht_traverse_children(en.children, key);
 }
 
 int ht_hash(char *key)
@@ -27,4 +35,31 @@ int ht_hash(char *key)
     };
 
     return hash;
+}
+
+int ht_remove(HashTable *table, char *key)
+{
+	// FIXME: Deal with array pointers allocated in collision cases
+	
+	int hash = ht_hash(key);
+	Entry new = { NULL, NULL };
+
+	table->entries[hash] = new;
+}
+
+Entry ht_traverse_children(Entry *entries, char *key) 
+{
+	int i;
+	int len = sizeof entries / sizeof entries[0];
+
+	for (i = 0; i < len; i++)
+	{
+		Entry en = entries[i];
+		if (en.key == key)
+		{
+			return en;
+		}
+	}
+	//FIXME handle case where entry not in array
+	//Right now will cause segfault
 }

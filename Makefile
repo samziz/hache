@@ -1,4 +1,4 @@
-BINARY_NAME?=kvdb
+BINARY_NAME?=hache
 BIN_DIR?=/usr/local/bin
 COMPILER?=gcc
 FILESET?=*.c

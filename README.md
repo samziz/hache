@@ -1,12 +1,12 @@
-# kvdb
+# hache
 
-### What is kvdb?
+### What is hache?
 
-KVDB is an experimental in-memory key-value datastore much like Memcached or Redis.
+hache is an experimental in-memory key-value datastore much like Memcached or Redis.
 
 ### Installation
 
-Use the makefile, which compiles kvdb using the gcc compiler. 
+Use the makefile, which compiles hache using the gcc compiler. 
 
 ### Syntax
 

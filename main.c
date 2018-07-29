@@ -22,7 +22,8 @@ int main(int argc, char *argv[])
 
 	if (argc == 1)
 	{
-		launch_interactive_shell();
+		// FIXME: Parse host and port from CLI flags
+		launch_interactive_shell("127.0.0.1", 7070);
 	}
 
 	if (argc == 2)
@@ -38,17 +39,24 @@ void execute_command(char *cmd)
 {
 	if (strcmp(cmd, "start") == 0)
 	{
-		int pid = fork();
+		launch_local_service();
+	}
+}
+
+void launch_local_service()
+{
+	int pid = fork();
 		
-		if (pid == 0) 
-		{
-			HashTable table;			
-			net_serve(&table, 7070);
-		} 
-		else 
-		{
-			printf(">> Launched database process\n");
-			exit(0);
-		}
+	if (pid == 0) 
+	{
+		HashTable table;			
+		net_serve(&table, 7070);
+		printf(">> Shutting down service\n");
+	}
+
+	else 
+	{
+		printf(">> Launched database process\n");
+		exit(0);
 	}
 }

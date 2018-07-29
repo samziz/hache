@@ -16,7 +16,8 @@ typedef struct HashTable {
 } HashTable;
 
 int ht_add(HashTable *table, char *key, char *value);
-char *ht_get(HashTable *table, char *key);
+Entry ht_get(HashTable *table, char *key);
 int ht_hash(char *key);
+Entry ht_traverse_children(Entry *entries, char *key);
 
 #endif

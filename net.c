@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -8,7 +9,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "db.h"
 #include "net.h"
 
 struct arg_struct {
@@ -16,10 +16,45 @@ struct arg_struct {
     struct HashTable *table;
 };
 
-// Forward declarations of non-interface functions
-void write_sock_data_to_db(HashTable *table, char *data);
 
-void conn_handler(void *ptr)
+/* Connect to a hache service at the specified host and port */
+int net_client_connect(char *host, int port)
+{
+    int sock;
+    struct addrinfo *addr;
+    struct sockaddr_in serv;
+
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        printf(">> Error opening client socket\n");
+        return 1;
+    }
+
+    if (getaddrinfo(host, "http", (void*)NULL, &addr) != 0)
+    {
+        printf(">> Error resolving destination hostname\n");
+        return 1;
+    }
+
+    memset(&serv, 0, sizeof(serv));
+    serv.sin_family = AF_INET;
+    serv.sin_port = htons(port);
+    inet_aton(addr->ai_canonname, &serv.sin_addr);
+
+    sock = socket(PF_INET, SOCK_STREAM, 0);
+
+    if (sock == -1) {
+       printf(">> Error creating client socket\n");
+    }
+
+    if (connect(sock, (struct sockaddr*)&serv, sizeof(serv)) == -1) {
+       printf("Error connecting client socket\n");
+    }
+
+    return sock;
+}
+
+void net_conn_handler(void *ptr)
 {
     struct arg_struct *args = (struct arg_struct *)ptr;
     int conn = args->conn;
@@ -40,76 +75,37 @@ void conn_handler(void *ptr)
         return;
     }
 
-    // Use separate thread to write 
-    write_sock_data_to_db(table, buf);
+    char *cmd = strtok(str, " ");
+    char *key = strtok(NULL, " ");
+
+    if (strcmp(cmd, "GET") == 0)
+    {
+        ht_get(table, key);
+    }
+
+    if (strcmp(cmd, "SET") == 0)
+    {
+        char *value = strtok(NULL, " ");
+        ht_add(table, key, value);
+    }
+
+    if (strcmp(cmd, "DELETE") == 0) 
+    {
+        ht_remove(table, key);
+    }
 
     write(conn, "SUCCESS", 8);
     close(conn);
 }
 
-/* Parse kv data and write to db */
-void write_sock_data_to_db(HashTable *table, char *data)
-{
-    char key[MAX_KEY_LENGTH];
-    char val[MAX_VALUE_LENGTH];
-
-    int len = sizeof(data) / sizeof(data[0]);
-
-    int i = 0;
-
-    // Read until null byte and write to key
-    for (i = 0; i < len; i++) {
-        if (data[i] == 0)
-            break;
-
-        key[i] = data[i];
-    }
-
-    // Read until null byte and write to val
-    for (; i < len; i++) {
-        if (data[i] == 0)
-            break;
-
-        val[i] = data[i];
-    }
-
-    ht_add(table, key, val);
-}
-
-int net_request(char *host, int port)
-{
-    int sock;
-    struct addrinfo *addr;
-    struct sockaddr_in serv;
-
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    {
-        printf(">> Error opening client socket\n");
-        return 1;
-    }
-
-    if ((addrinfo = getaddrinfo(host)) == NULL)
-    {
-        printf(">> Error resolving destination hostname\n");
-        return 1;
-    }
-
-    memset(&serv, 0, sizeof(serv))
-    serv.sin_family = AF_INET;
-    serv.sin_port = htons(port);
-    serv.sin_addr = addr;
-
-    
-}
-
 /* Listen on port and return a character buffer */
 void net_serve(HashTable *table, int port)
 {
-   	int new_conn, sock;
-   	struct sockaddr_in serv;
+    int new_conn, sock;
+    struct sockaddr_in serv;
     
     // Open TCP socket
-   	sock = socket(AF_INET, SOCK_STREAM, 0);
+    sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
     {
         printf(">> Error opening socket\n");
@@ -135,8 +131,8 @@ void net_serve(HashTable *table, int port)
         exit(1);
     };
 
-  	while (1)
-  	{
+    while (1)
+    {
         new_conn = accept(sock, (struct sockaddr *)NULL, (socklen_t *)NULL);
 
         struct arg_struct args;
@@ -146,8 +142,16 @@ void net_serve(HashTable *table, int port)
 
         // Spawn thread to handle connection
         pthread_t io_thread;
-        pthread_create(&io_thread, NULL, (void *)&conn_handler, (void *)&args);
-  	};
+        pthread_create(&io_thread, NULL, (void *)&net_conn_handler, (void *)&args);
+    };
   
-   	return;
+    return;
+}
+
+/* Parse kv data and write to db */
+void net_write_to_db(HashTable *table, char *key, char *value)
+{
+    // FIXME: Check key and value validity
+
+    ht_add(table, key, val);
 }
