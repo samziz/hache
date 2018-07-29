@@ -16,14 +16,10 @@ Entry ht_get(HashTable *table, char *key)
 	int hash = ht_hash(key);
 	Entry en = table->entries[hash];
 	
-	if (en.key != NULL)
-	{
-		return en;
-	}
-
-	return ht_traverse_children(en.children, key);
+	return en;
 }
 
+// Modification of djb2 hashing algorithm to return within int bounds.
 int ht_hash(char *key)
 {
 	unsigned long hash = 5381;
@@ -31,7 +27,7 @@ int ht_hash(char *key)
 
     while ((c = *key++))
     {
-        hash = ((hash << 5) + hash) + c;
+        hash = (hash << 5) + c;
     };
 
     return hash;
@@ -40,13 +36,7 @@ int ht_hash(char *key)
 HashTable *ht_make_table()
 {
 	HashTable *table = (struct HashTable*) malloc(sizeof(struct HashTable));
-	Entry blank = {NULL, NULL};
-	const int len = sizeof(table->entries) / sizeof(blank);
-
-	for (int i = 0; i < len; i++)
-	{
-		table->entries[i] = blank;
-	}
+	memset(table->entries, 0, sizeof(table->entries) / sizeof(Entry));
 	
 	return table;
 }

@@ -36,10 +36,17 @@ int net_client_connect(char *host, int port)
         return 1;
     }
 
-    memset(&serv, 0, sizeof(serv));
-    serv.sin_family = AF_INET;
-    serv.sin_port = htons(port);
-    inet_aton(addr->ai_canonname, &serv.sin_addr);
+    for (struct addrinfo *res = addr; res != NULL; res = res->ai_next)
+    {
+        if (res->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in* saddr = (struct sockaddr_in*)res->ai_addr;
+            memset(&serv, 0, sizeof(serv));
+            serv.sin_family = AF_INET;
+            serv.sin_port = htons(port);
+            serv.sin_addr = saddr->sin_addr;
+        }
+    }
 
     sock = socket(PF_INET, SOCK_STREAM, 0);
 
@@ -48,7 +55,7 @@ int net_client_connect(char *host, int port)
     }
 
     if (connect(sock, (struct sockaddr*)&serv, sizeof(serv)) == -1) {
-       printf("Error connecting client socket\n");
+       printf(">> Error connecting client socket\n");
     }
 
     return sock;
@@ -69,32 +76,40 @@ void net_conn_handler(void *ptr)
     char *buf = malloc(10000);
     memset(buf, 0, 10000);
 
-    if (read(conn, buf, 10000) < 0) {
+    while (read(conn, buf, 10000) > 0)
+    {
+        // Strip trailing newline
+        if (buf[strlen(buf)-1] == 10)
+            buf[strlen(buf)-1] = 0;
+
+        char *cmd = strtok(buf, " ");
+        char *key = strtok(NULL, " ");
+
+        if (strcmp(cmd, "GET") == 0)
+        {
+            Entry en = ht_get(table, key);
+            write(conn, en.value, 10000);
+            continue;
+        }
+
+        if (strcmp(cmd, "SET") == 0)
+        {
+            char *value = strtok(NULL, " ");
+            ht_add(table, key, value);
+            write(conn, "SUCCESS", 8);
+            continue;
+        }
+
+        if (strcmp(cmd, "DELETE") == 0) 
+        {
+            ht_remove(table, key);
+            write(conn, "SUCCESS", 8);
+            continue;
+        }
+
         write(conn, "ERROR", 6);
-        close(conn);
-        return;
     }
 
-    char *cmd = strtok(buf, " ");
-    char *key = strtok(NULL, " ");
-
-    if (strcmp(cmd, "GET") == 0)
-    {
-        ht_get(table, key);
-    }
-
-    if (strcmp(cmd, "SET") == 0)
-    {
-        char *value = strtok(NULL, " ");
-        ht_add(table, key, value);
-    }
-
-    if (strcmp(cmd, "DELETE") == 0) 
-    {
-        ht_remove(table, key);
-    }
-
-    write(conn, "SUCCESS", 8);
     close(conn);
 }
 

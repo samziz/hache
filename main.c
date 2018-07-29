@@ -9,21 +9,12 @@
 #include "net.h"
 #include "shell.h"
 
-void sigint_handler(int sig)
-{
-	printf("\n>> Wrapping up...\n");
-	exit(0);
-}
-
 int main(int argc, char *argv[]) 
 {
-	// Handle signals
-	signal(SIGINT, sigint_handler);
-
 	if (argc == 1)
 	{
 		// FIXME: Parse host and port from CLI flags
-		launch_interactive_shell("127.0.0.1", 7070);
+		launch_interactive_shell("localhost", 7070);
 	}
 
 	if (argc == 2)
@@ -51,8 +42,8 @@ void execute_command(char *cmd)
 void launch_local_service()
 {
 	int pid = fork();
-	
-	if (pid == 0) 
+
+	if (pid == 0)
 	{
 		HashTable *table = ht_make_table();
 		net_serve(table, 7070);
