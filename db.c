@@ -11,6 +11,19 @@ int ht_add(HashTable *table, char *key, char *value)
 	return 0;
 }
 
+unsigned int ht_count(HashTable *table)
+{
+	unsigned int count = 0;
+
+	for (unsigned int i = 0; i < UINT_MAX; i++)
+	{
+		if (strlen(table->entries[i].key) != 0)
+			count++;
+	}
+
+	return count;
+}
+
 Entry ht_get(HashTable *table, char *key)
 {
 	int hash = ht_hash(key);
@@ -20,9 +33,9 @@ Entry ht_get(HashTable *table, char *key)
 }
 
 // Modification of djb2 hashing algorithm to return within int bounds.
-int ht_hash(char *key)
+unsigned int ht_hash(char *key)
 {
-	unsigned long hash = 5381;
+	unsigned int hash = 5381;
     int c;
 
     while ((c = *key++))
@@ -56,8 +69,8 @@ int ht_remove(HashTable *table, char *key)
 Entry ht_traverse_children(Entry *entries, char *key) 
 {
 	Entry en;
-	int i;
-	int len = sizeof entries / sizeof entries[0];
+	unsigned int i;
+	unsigned int len = sizeof entries / sizeof entries[0];
 
 	for (i = 0; i < len; i++)
 	{
