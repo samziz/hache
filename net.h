@@ -7,6 +7,7 @@
 #define MAX_VALUE_LENGTH 10000
 
 int net_client_connect(char *host, int port);
+void net_launch_local_service();
 void net_serve(HashTable *table, int port);
 
 #endif

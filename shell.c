@@ -12,7 +12,7 @@ int glob_sock;
 
 void sigint_handler(int sig);
 
-int execute_shell_command(char *args, int sock)
+int sh_execute_cmd(char *args, int sock)
 {
 	char *cmd = strtok(args, " ");
 
@@ -54,7 +54,7 @@ int execute_shell_command(char *args, int sock)
 	return 0;
 }
 
-int launch_interactive_shell(char *host, int port)
+int sh_launch_interactive(char *host, int port)
 {
 	// Connect to hache service
 	int sock = net_client_connect(host, port);
@@ -69,7 +69,7 @@ int launch_interactive_shell(char *host, int port)
 	    printf("> ");
 	    char *args = readline("");
 	    
-	    int res = execute_shell_command(args, sock);
+	    int res = sh_execute_cmd(args, sock);
 	    
 	    if (res == 1)
 	    {

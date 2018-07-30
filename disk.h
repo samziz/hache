@@ -1,6 +1,8 @@
 #ifndef DISK_H
 #define DISK_H
 
-void read_from_file(char *buf);
+int disk_format_env();
+HashTable *disk_read_serialised_table();
+int disk_write_serialised_table(HashTable *table);
 
 #endif

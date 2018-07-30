@@ -56,6 +56,7 @@ int net_client_connect(char *host, int port)
 
     if (connect(sock, (struct sockaddr*)&serv, sizeof(serv)) == -1) {
        printf(">> Error connecting client socket\n");
+       exit(1);
     }
 
     return sock;
@@ -111,6 +112,24 @@ void net_conn_handler(void *ptr)
     }
 
     close(conn);
+}
+
+void net_launch_local_service()
+{
+    int pid = fork();
+
+    if (pid == 0)
+    {
+        HashTable *table = ht_make_table();
+        net_serve(table, 7070);
+        printf(">> Shutting down service\n");
+    }
+
+    else 
+    {
+        printf(">> Launched database process\n");
+        exit(0);
+    }
 }
 
 /* Listen on port and return a character buffer */
