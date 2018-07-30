@@ -1,12 +1,12 @@
-# hache
+# Hache
 
-### What is hache?
+### What is Hache?
 
-hache is an experimental in-memory key-value datastore much like Memcached or Redis.
+Hache is an experimental in-memory key-value datastore much like Memcached or Redis.
 
 ### Installation
 
-Use the makefile, which compiles hache using the gcc compiler. 
+Use the makefile, which compiles Hache using the gcc compiler. 
 
 ### Syntax
 
