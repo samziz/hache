@@ -12,6 +12,28 @@ int glob_sock;
 
 void sigint_handler(int sig);
 
+
+/*** CLI COMMAND HANDLER ***/
+
+int sh_cmd_handler(int argc, char **argv)
+{	    
+	if (argc < 3)
+    {
+        printf(">> Hache shell module requires a command\n");
+        exit(1);
+    }
+
+    char *mod_cmd = argv[2];
+
+    if (!strcmp(mod_cmd, "start"))
+        sh_launch_interactive("localhost", 7070);
+
+    else
+    	printf(">> Command '%s' not valid for Hache shell module\n", mod_cmd);
+}
+
+/*** INTERNAL FUNCTIONS ***/
+
 int sh_execute_cmd(char *args, int sock)
 {
 	char *cmd = strtok(args, " ");

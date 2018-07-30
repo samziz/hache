@@ -8,39 +8,27 @@
 #include "net.h"
 #include "shell.h"
 
-
-void execute_command(char *cmd)
+// Parse the second word of a command and pass args
+// along to the relevant module to be handled.
+void execute_command(int argc, char **argv)
 {
-	if (!strcmp(cmd, "start"))
-	{
-		net_launch_local_service();
-	}
+	if (!strcmp(argv[1], "service"))
+		net_cmd_handler(argc, argv);
 
-	if (!strcmp(cmd, "shell"))
-	{
-		// FIXME: Parse host and port from CLI flags
-		sh_launch_interactive("localhost", 7070);
-	}
+	else if (!strcmp(argv[1], "shell"))
+		sh_cmd_handler(argc, argv);
 
 	else
-	{
-		printf(">> Invalid command '%s'\n", cmd);
-	}
+		printf(">> Invalid command '%s'\n", argv[1]);
 }
 
 int main(int argc, char *argv[]) 
 {
-	if (argc == 1)
+	if (argc > 1)
 	{
-		// FIXME: Parse host and port from CLI flags
-		sh_launch_interactive("localhost", 7070);
+		execute_command(argc, argv);
 	}
 
-	if (argc == 2)
-	{
-		char *cmd = argv[1];
-		execute_command(cmd);
-	}
-
-	return 0;
+	else
+		printf(">> Please supply a command\n");
 }

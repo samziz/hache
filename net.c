@@ -11,56 +11,50 @@
 #include <unistd.h>
 #include "net.h"
 
+
+/*** GLOBALS ***/
+
 struct arg_struct {
     int conn;
     struct HashTable *table;
 };
 
 
-/* Connect to a hache service at the specified host and port */
-int net_client_connect(char *host, int port)
+/*** FORWARD DECLARATIONS ***/
+
+int net_client_connect(char *host, int port);
+int net_kill_local_service(char *name);
+void net_launch_local_service();
+void net_serve(HashTable *table, int port);
+
+
+/*** CLI COMMAND HANDLER ***/
+
+int net_cmd_handler(int argc, char **argv)
 {
-    int sock;
-    struct addrinfo *addr;
-    struct sockaddr_in serv;
-
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    if (argc < 3)
     {
-        printf(">> Error opening client socket\n");
-        return 1;
+        printf(">> Hache service module requires a command\n");
+        exit(1);
     }
 
-    if (getaddrinfo(host, "http", (void*)NULL, &addr) != 0)
+    char *mod_cmd = argv[2];
+    
+    if (!strcmp(mod_cmd, "start"))
+        net_launch_local_service();
+
+    else if (!strcmp(mod_cmd, "stop"))
     {
-        printf(">> Error resolving destination hostname\n");
-        return 1;
+        char *name = argv[3];
+        net_kill_local_service(name);
     }
 
-    for (struct addrinfo *res = addr; res != NULL; res = res->ai_next)
-    {
-        if (res->ai_addr->sa_family == AF_INET)
-        {
-            struct sockaddr_in* saddr = (struct sockaddr_in*)res->ai_addr;
-            memset(&serv, 0, sizeof(serv));
-            serv.sin_family = AF_INET;
-            serv.sin_port = htons(port);
-            serv.sin_addr = saddr->sin_addr;
-        }
-    }
+    else
+        printf(">> Command '%s' not valid for Hache service module\n", mod_cmd);
+};
 
-    sock = socket(PF_INET, SOCK_STREAM, 0);
 
-    if (sock == -1) {
-       printf(">> Error creating client socket\n");
-    }
-
-    if (connect(sock, (struct sockaddr*)&serv, sizeof(serv)) == -1) {
-       printf(">> Error connecting client socket\n");
-       exit(1);
-    }
-
-    return sock;
-}
+/*** INTERNAL FUNCTIONS ***/
 
 void net_conn_handler(void *ptr)
 {
@@ -112,6 +106,11 @@ void net_conn_handler(void *ptr)
     }
 
     close(conn);
+}
+
+int net_kill_local_service(char *name)
+{
+    return 0;
 }
 
 void net_launch_local_service()
@@ -180,4 +179,52 @@ void net_serve(HashTable *table, int port)
     };
   
     return;
+}
+
+
+/*** INTERFACE FUNCTIONS ***/
+
+/* Connect to a hache service at the specified host and port */
+int net_client_connect(char *host, int port)
+{
+    int sock;
+    struct addrinfo *addr;
+    struct sockaddr_in serv;
+
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        printf(">> Error opening client socket\n");
+        return 1;
+    }
+
+    if (getaddrinfo(host, "http", (void*)NULL, &addr) != 0)
+    {
+        printf(">> Error resolving destination hostname\n");
+        return 1;
+    }
+
+    for (struct addrinfo *res = addr; res != NULL; res = res->ai_next)
+    {
+        if (res->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in* saddr = (struct sockaddr_in*)res->ai_addr;
+            memset(&serv, 0, sizeof(serv));
+            serv.sin_family = AF_INET;
+            serv.sin_port = htons(port);
+            serv.sin_addr = saddr->sin_addr;
+        }
+    }
+
+    sock = socket(PF_INET, SOCK_STREAM, 0);
+
+    if (sock == -1) {
+       printf(">> Error creating client socket\n");
+    }
+
+    if (connect(sock, (struct sockaddr*)&serv, sizeof(serv)) == -1) {
+       printf(">> Error connecting client socket\n");
+       exit(1);
+    }
+
+    return sock;
 }
