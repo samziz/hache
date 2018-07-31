@@ -7,15 +7,22 @@
 #include "net.h"
 #include "shell.h"
 
+/*** GLOBAL ***/
+
 // Store socket variable globally in case of sigint 
+
 int glob_sock;
 
+
+/*** FORWARD DECLARATIONS ***/
+
 void sigint_handler(int sig);
+int sh_launch_interactive(char *host, int port);
 
 
 /*** CLI COMMAND HANDLER ***/
 
-int sh_cmd_handler(int argc, char **argv)
+void sh_cmd_handler(int argc, char **argv)
 {	    
 	if (argc < 3)
     {

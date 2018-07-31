@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "disk.h"
 #include "net.h"
 
 
@@ -30,7 +31,7 @@ void net_serve(HashTable *table, int port);
 
 /*** CLI COMMAND HANDLER ***/
 
-int net_cmd_handler(int argc, char **argv)
+void net_cmd_handler(int argc, char **argv)
 {
     if (argc < 3)
     {
@@ -40,10 +41,10 @@ int net_cmd_handler(int argc, char **argv)
 
     char *mod_cmd = argv[2];
     
-    if (!strcmp(mod_cmd, "start"))
+    if (!strcasecmp(mod_cmd, "start"))
         net_launch_local_service();
 
-    else if (!strcmp(mod_cmd, "stop"))
+    else if (!strcasecmp(mod_cmd, "stop"))
     {
         char *name = argv[3];
         net_kill_local_service(name);
@@ -56,7 +57,7 @@ int net_cmd_handler(int argc, char **argv)
 
 /*** INTERNAL FUNCTIONS ***/
 
-void net_conn_handler(void *ptr)
+void net_conn_thread(void *ptr)
 {
     struct arg_struct *args = (struct arg_struct *)ptr;
     int conn = args->conn;
@@ -77,8 +78,8 @@ void net_conn_handler(void *ptr)
         if (buf[strlen(buf)-1] == 10)
             buf[strlen(buf)-1] = 0;
 
-        char *cmd = strtok(buf, " ");
-        char *key = strtok(NULL, " ");
+        char *cmd = strtok(buf, "\n");
+        char *key = strtok(NULL, "\n");
 
         if (strcmp(cmd, "GET") == 0)
         {
@@ -120,6 +121,10 @@ void net_launch_local_service()
     if (pid == 0)
     {
         HashTable *table = ht_make_table();
+
+        pthread_t disk_thread;
+        pthread_create(&disk_thread, NULL, (void *)&disk_write_thread, (void*)table);
+
         net_serve(table, 7070);
         printf(">> Shutting down service\n");
     }
@@ -175,7 +180,7 @@ void net_serve(HashTable *table, int port)
 
         // Spawn thread to handle connection
         pthread_t io_thread;
-        pthread_create(&io_thread, NULL, (void *)&net_conn_handler, (void *)&args);
+        pthread_create(&io_thread, NULL, (void *)&net_conn_thread, (void *)&args);
     };
   
     return;
