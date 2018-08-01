@@ -88,7 +88,7 @@ void net_conn_thread(void *ptr)
             if (ht_get(table, key, &en) == E_DB_READ)
                 write(conn, "ERROR: E_DB_READ", 17);
 
-            else
+            else 
                 write(conn, en.value, 10000);
 
             continue;
@@ -126,7 +126,7 @@ int net_kill_local_service(char *name)
 }
 
 void net_launch_local_service()
-{
+{   
     int pid = fork();
 
     if (pid == 0)

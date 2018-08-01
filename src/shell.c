@@ -10,7 +10,6 @@
 /*** GLOBAL ***/
 
 // Store socket variable globally in case of sigint 
-
 int glob_sock;
 
 
