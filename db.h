@@ -3,8 +3,19 @@
 
 #include <limits.h>
 
+
+/*** ERRORS ***/
+
+#define E_DB_NOKEY -1
+#define E_DB_READ -2
+#define E_DB_WRITE -3
+#define E_DB_ALLOC -4
+
+/*** SETTINGS ***/
+
 #define MAX_CHILDREN 50
 #define TABLE_SIZE (USHRT_MAX * sizeof(struct Entry))
+
 
 typedef struct Entry {
 	char *key;
@@ -17,8 +28,8 @@ typedef struct HashTable {
 } HashTable;
 
 int ht_add(HashTable *table, char *key, char *value);
-Entry ht_get(HashTable *table, char *key);
-HashTable *ht_make_table();
+int ht_get(HashTable *table, char *key, Entry *en);
+int ht_make_table(HashTable *table);
 int ht_remove(HashTable *table, char *key);
 
 #endif

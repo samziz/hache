@@ -38,4 +38,4 @@ By default Hache will listen on port 7070 when you run `hache service start`.
 
 ### Database implementation
 
-Hache uses a simple hash-table implementation based on an in-memory array which is periodically written to disk. 
+Hache uses a simple hash-table implementation based on an in-memory array which is periodically written to disk. We use a hashing algorithm designed to (i) use simple and fast bitwise ops where possible, while (ii) be responsive to key length and bit values where possible rather than calculations based only on the hash value in order to increase uniformity of distribution.

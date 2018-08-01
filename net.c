@@ -78,25 +78,36 @@ void net_conn_thread(void *ptr)
         if (buf[strlen(buf)-1] == 10)
             buf[strlen(buf)-1] = 0;
 
-        char *cmd = strtok(buf, "\n");
-        char *key = strtok(NULL, "\n");
+        char *cmd = strtok(buf, " ");
+        char *key = strtok(NULL, " ");
 
-        if (strcmp(cmd, "GET") == 0)
+        if (!strcasecmp(cmd, "GET"))
         {
-            Entry en = ht_get(table, key);
-            write(conn, en.value, 10000);
+            struct Entry en;
+            
+            if (ht_get(table, key, &en) == E_DB_READ)
+                write(conn, "ERROR: E_DB_READ", 17);
+
+            else
+                write(conn, en.value, 10000);
+
             continue;
         }
 
-        if (strcmp(cmd, "SET") == 0)
+        if (!strcasecmp(cmd, "SET"))
         {
             char *value = strtok(NULL, " ");
-            ht_add(table, key, value);
-            write(conn, "SUCCESS", 8);
+
+            if (ht_add(table, key, value) == E_DB_WRITE)
+                write(conn, "ERROR: E_DB_WRITE", 18);
+
+            else  
+                write(conn, "SUCCESS", 8);
+
             continue;
         }
 
-        if (strcmp(cmd, "DELETE") == 0) 
+        if (!strcasecmp(cmd, "DELETE")) 
         {
             ht_remove(table, key);
             write(conn, "SUCCESS", 8);
@@ -120,12 +131,18 @@ void net_launch_local_service()
 
     if (pid == 0)
     {
-        HashTable *table = ht_make_table();
+        struct HashTable table = {};
+        
+        if (ht_make_table(&table) == E_DB_ALLOC)
+        {
+            printf(">> Not enough space to allocate base array\n");
+            exit(1);
+        };
 
         pthread_t disk_thread;
-        pthread_create(&disk_thread, NULL, (void *)&disk_write_thread, (void*)table);
+        pthread_create(&disk_thread, NULL, (void *)&disk_write_thread, (void*)&table);
 
-        net_serve(table, 7070);
+        net_serve(&table, 7070);
         printf(">> Shutting down service\n");
     }
 
