@@ -4,7 +4,9 @@
 
 Hache is an experimental in-memory key-value datastore much like Memcached or Redis.
 
-![alt text][cli-img]
+<p align="center">
+  <img width="517" height="400" src="https://github.com/samziz/hache/raw/master/misc/cli-img.png">
+</p>
 
 ## Usage
 
@@ -40,6 +42,3 @@ By default Hache will listen on port 7070 when you run `hache service start`.
 ### Database implementation
 
 Hache uses a simple hash-table implementation based on an in-memory array which is periodically written to disk. We use a hashing algorithm designed to (i) use simple and fast bitwise ops where possible, while (ii) be responsive to key length and bit values where possible rather than calculations based only on the hash value in order to increase uniformity of distribution.
-
-
-[cli-img]: https://github.com/samziz/hache/raw/master/misc/cli-img.png "Command line screenshot"
