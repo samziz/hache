@@ -33,25 +33,25 @@ void net_serve(HashTable *table, int port);
 
 int net_cmd_handler(int argc, char **argv)
 {
-    if (argc < 3)
-    {
+    if (argc < 3) {
         puts(">> Hache service module requires a command");
         exit(1);
     }
 
     char *mod_cmd = argv[2];
     
-    if (!strcasecmp(mod_cmd, "start"))
+    if (!strcasecmp(mod_cmd, "start")) {
         net_launch_local_service();
+    }
 
-    else if (!strcasecmp(mod_cmd, "stop"))
-    {
+    else if (!strcasecmp(mod_cmd, "stop")) {
         char *name = argv[3];
         net_kill_local_service(name);
     }
 
-    else
+    else {
         printf(">> Command '%s' not valid for Hache service module\n", mod_cmd);
+    }
 
     return 0;
 };
@@ -65,8 +65,7 @@ void net_conn_thread(void *ptr)
     int conn = args->conn;
     struct HashTable *table = args->table;
 
-    if (conn < 0)
-    {   
+    if (conn < 0) {   
         close(conn);
         return;
     }
@@ -74,43 +73,45 @@ void net_conn_thread(void *ptr)
     char *buf = malloc(10000);
     memset(buf, 0, 10000);
 
-    while (read(conn, buf, 10000) > 0)
-    {
+    while (read(conn, buf, 10000) > 0) {
+
         // Strip trailing newline
-        if (buf[strlen(buf)-1] == 10)
+        if (buf[strlen(buf)-1] == 10) {
             buf[strlen(buf)-1] = 0;
+        }
 
         char *cmd = strtok(buf, " ");
         char *key = strtok(NULL, " ");
 
-        if (!strcasecmp(cmd, "GET"))
-        {
+        if (!strcasecmp(cmd, "GET")) {
             struct Entry en;
 
-            if (ht_get(table, key, &en) == E_DB_READ)
+            if (ht_get(table, key, &en) == E_DB_READ) {
                 write(conn, "ERROR: E_DB_READ", 17);
+            }
 
-            else 
+            else {
                 write(conn, en.value, 10000);
+            }
 
             continue;
         }
 
-        if (!strcasecmp(cmd, "SET"))
-        {
+        if (!strcasecmp(cmd, "SET")) {
             char *value = strtok(NULL, " ");
 
-            if (ht_add(table, key, value) == E_DB_WRITE)
+            if (ht_add(table, key, value) == E_DB_WRITE) {
                 write(conn, "ERROR: E_DB_WRITE", 18);
+            }
 
-            else  
+            else {
                 write(conn, "SUCCESS", 8);
+            }
 
             continue;
         }
 
-        if (!strcasecmp(cmd, "DELETE")) 
-        {
+        if (!strcasecmp(cmd, "DELETE")) {
             ht_remove(table, key);
             write(conn, "SUCCESS", 8);
             continue;
@@ -131,12 +132,10 @@ void net_launch_local_service()
 {   
     int pid = fork();
 
-    if (pid == 0)
-    {
+    if (pid == 0) {
         struct HashTable table = {};
         
-        if (ht_make_table(&table) == E_DB_ALLOC)
-        {
+        if (ht_make_table(&table) == E_DB_ALLOC) {
             puts(">> Not enough space to allocate base array");
             exit(1);
         };
@@ -148,8 +147,9 @@ void net_launch_local_service()
         printf(">> Shutting down service\n");
     }
 
-    else 
+    else {
         puts(">> Launched database process");
+    }
 
     exit(0);
 }
@@ -162,8 +162,8 @@ void net_serve(HashTable *table, int port)
     
     // Open TCP socket
     sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0)
-    {
+    
+    if (sock < 0) {
         puts(">> Error opening socket");
         exit(1);
     }
@@ -175,20 +175,17 @@ void net_serve(HashTable *table, int port)
     serv.sin_port = htons(port);
 
     // Bind socket to port specified by user (default 7070)
-    if (bind(sock, (struct sockaddr *)&serv, sizeof(serv)) < 0)
-    {
+    if (bind(sock, (struct sockaddr *)&serv, sizeof(serv)) < 0) {
         puts(">> Error on binding socket. Run 'ps' to see if you already have a database running.");
         exit(1);
     };
     
-    if (listen(sock, 128) < 0)
-    {
+    if (listen(sock, 128) < 0) {
         puts(">> Error on listening");
         exit(1);
     };
 
-    while (1)
-    {
+    while (1) {
         new_conn = accept(sock, (struct sockaddr *)NULL, (socklen_t *)NULL);
 
         struct arg_struct args;
@@ -213,22 +210,18 @@ int net_client_connect(char *host, int port)
     struct addrinfo *addr;
     struct sockaddr_in serv;
 
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    {
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         puts(">> Error opening client socket");
         return 1;
     }
 
-    if (getaddrinfo(host, "http", (void*)NULL, &addr) != 0)
-    {
+    if (getaddrinfo(host, "http", (void*)NULL, &addr) != 0) {
         puts(">> Error resolving destination hostname");
         return 1;
     }
 
-    for (struct addrinfo *res = addr; res != NULL; res = res->ai_next)
-    {
-        if (res->ai_addr->sa_family == AF_INET)
-        {
+    for (struct addrinfo *res = addr; res != NULL; res = res->ai_next) {
+        if (res->ai_addr->sa_family == AF_INET) {
             struct sockaddr_in* saddr = (struct sockaddr_in*)res->ai_addr;
             memset(&serv, 0, sizeof(serv));
             serv.sin_family = AF_INET;

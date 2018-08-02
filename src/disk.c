@@ -22,15 +22,13 @@ int disk_safe_mkdir(char *path)
 {
 	static struct stat st = {0};
 
-	if (stat(path, &st) == -1)
-	{
+	if (stat(path, &st) == -1) {
 		errno = 0;
 
 		if (mkdir(path, S_IRWXU) == 0)
 			return 0;
 
-		switch (errno)
-		{
+		switch (errno) {
 			case EACCES:
 				printf(">> EACCES error making directory %s\n", path);
 				break;
@@ -63,12 +61,14 @@ int disk_format_env()
 	char *path = disk_get_homedir();
 
 	strcat(path, "/hache");
-	if (disk_safe_mkdir(path) != 0)
+	if (disk_safe_mkdir(path) != 0) {
 		return E_DISK_FORMAT;
+	}
 
 	strcat(path, "/dumps");
-	if (disk_safe_mkdir(path) != 0)
+	if (disk_safe_mkdir(path) != 0) {
 		return E_DISK_FORMAT;
+	}
 	
 	return 0;
 }
@@ -87,8 +87,7 @@ HashTable *disk_restore_from_file()
 	char *buf = malloc(10000);
     memset(buf, 0, 10000);
 
-	while (fgets(buf, 10000, file) > 0)
-	{
+	while (fgets(buf, 10000, file) > 0) {
 		char *index = strtok(buf, " ");
 		char *key = strtok(buf, " ");
 		char *value = strtok(NULL, "\n");
@@ -115,10 +114,10 @@ int disk_write_to_file(HashTable *table)
 
 	file = fopen(fname, "w");
 
-	for (unsigned short i = 0; i < USHRT_MAX; i++)
-	{	
-		if (table->entries[i].key)
+	for (unsigned short i = 0; i < USHRT_MAX; i++) {	
+		if (table->entries[i].key) {
 			fprintf(file, "%d %s %s\n", i, table->entries[i].key, table->entries[i].value);
+		}
 	}
 
 	fclose(file);
@@ -130,11 +129,11 @@ int disk_write_thread(void *ptr)
 {
     struct HashTable *table = (struct HashTable *)ptr;
 
-    if (disk_format_env() != 0)
+    if (disk_format_env() != 0) {
     	return E_DISK_FORMAT; /* should call pthread_exit */
+    }
 
-    while (1)
-    {
+    while (1) {
         disk_write_to_file(table);
         sleep(WRITE_INTERVAL_SECS);
     }

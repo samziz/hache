@@ -13,8 +13,7 @@ unsigned short ht_hash(char *key)
 	int c;
 	int i = 0;
 
-    while ((c = *key++))
-    {
+    while ((c = *key++)) {
     	hash += c << hash;
     	i++;
     }
@@ -41,10 +40,8 @@ unsigned short ht_count(HashTable *table)
 {
 	unsigned short count = 0;
 
-	for (unsigned short i = 0; i < USHRT_MAX; i++)
-	{
-		if (strlen(table->entries[i].key) != 0)
-		{
+	for (unsigned short i = 0; i < USHRT_MAX; i++) {
+		if (strlen(table->entries[i].key) != 0) {
 			count++;
 		}
 	}
@@ -57,10 +54,9 @@ int ht_get(HashTable *table, char *key, Entry *en)
 	unsigned short hash = ht_hash(key);
 
 	struct Entry en_iter = table->entries[hash];
-	while (en_iter.key)
-	{
-		if (!strcmp(en_iter.key, key))
-		{
+	
+	while (en_iter.key) {
+		if (!strcmp(en_iter.key, key)) {
 			en->value = en_iter.value;
 			return 0;
 		}
@@ -78,8 +74,9 @@ int ht_make_table(HashTable *table)
 	table = (struct HashTable*) malloc(TABLE_SIZE);
 	memset(table, 0, TABLE_SIZE);
 
-	if (table == NULL)
+	if (table == NULL) {
 		return E_DB_ALLOC;
+	}
 
 	return 0;
 }
@@ -90,10 +87,8 @@ int ht_remove(HashTable *table, char *key)
 
 	struct Entry *en = &table->entries[hash];
 	
-	while (en->key)
-	{
-		if (!strcmp(en->key, key))
-		{
+	while (en->key) {
+		if (!strcmp(en->key, key)) {
 			memset(en, 0, sizeof(*en));
 			return 0;
 		}

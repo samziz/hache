@@ -12,29 +12,30 @@
 // along to the relevant module to be handled.
 void execute_command(int argc, char **argv)
 {
-	if (!strcmp(argv[1], "service"))
-	{
-		if (!net_cmd_handler(argc, argv))
+	if (!strcmp(argv[1], "service")) {
+		if (!net_cmd_handler(argc, argv)) {
 			exit(1);
+		}
 	}
 
-	else if (!strcmp(argv[1], "shell"))
-	{
-		if (!sh_cmd_handler(argc, argv))
+	else if (!strcmp(argv[1], "shell")) {
+		if (!sh_cmd_handler(argc, argv)) {
 			exit(1);
+		}
 	}
 
-	else
+	else {
 		printf(">> Invalid command '%s'\n", argv[1]);
+	}
 }
 
 int main(int argc, char *argv[]) 
 {
-	if (argc > 1)
-	{
+	if (argc > 1) {
 		execute_command(argc, argv);
 	}
 
-	else
+	else {
 		printf(">> Please supply a command\n");
+	}
 }
