@@ -91,7 +91,7 @@ HashTable *disk_restore_from_file()
 	{
 		char *index = strtok(buf, " ");
 		char *key = strtok(buf, " ");
-		char *value = strtok(NULL, " ");
+		char *value = strtok(NULL, "\n");
 
 		int i = atoi(index);
 

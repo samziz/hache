@@ -31,11 +31,11 @@ void net_serve(HashTable *table, int port);
 
 /*** CLI COMMAND HANDLER ***/
 
-void net_cmd_handler(int argc, char **argv)
+int net_cmd_handler(int argc, char **argv)
 {
     if (argc < 3)
     {
-        printf(">> Hache service module requires a command\n");
+        puts(">> Hache service module requires a command");
         exit(1);
     }
 
@@ -52,6 +52,8 @@ void net_cmd_handler(int argc, char **argv)
 
     else
         printf(">> Command '%s' not valid for Hache service module\n", mod_cmd);
+
+    return 0;
 };
 
 
@@ -135,7 +137,7 @@ void net_launch_local_service()
         
         if (ht_make_table(&table) == E_DB_ALLOC)
         {
-            printf(">> Not enough space to allocate base array\n");
+            puts(">> Not enough space to allocate base array");
             exit(1);
         };
 
@@ -147,10 +149,9 @@ void net_launch_local_service()
     }
 
     else 
-    {
-        printf(">> Launched database process\n");
-        exit(0);
-    }
+        puts(">> Launched database process");
+
+    exit(0);
 }
 
 /* Listen on port and return a character buffer */
@@ -163,7 +164,7 @@ void net_serve(HashTable *table, int port)
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
     {
-        printf(">> Error opening socket\n");
+        puts(">> Error opening socket");
         exit(1);
     }
 
@@ -176,13 +177,13 @@ void net_serve(HashTable *table, int port)
     // Bind socket to port specified by user (default 7070)
     if (bind(sock, (struct sockaddr *)&serv, sizeof(serv)) < 0)
     {
-        printf(">> Error on binding socket. Run 'ps' to see if you already have a database running.\n");
+        puts(">> Error on binding socket. Run 'ps' to see if you already have a database running.");
         exit(1);
     };
     
     if (listen(sock, 128) < 0)
     {
-        printf(">> Error on listening\n");
+        puts(">> Error on listening");
         exit(1);
     };
 
@@ -191,7 +192,6 @@ void net_serve(HashTable *table, int port)
         new_conn = accept(sock, (struct sockaddr *)NULL, (socklen_t *)NULL);
 
         struct arg_struct args;
-
         args.conn = new_conn;
         args.table = table;
 
@@ -215,13 +215,13 @@ int net_client_connect(char *host, int port)
 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        printf(">> Error opening client socket\n");
+        puts(">> Error opening client socket");
         return 1;
     }
 
     if (getaddrinfo(host, "http", (void*)NULL, &addr) != 0)
     {
-        printf(">> Error resolving destination hostname\n");
+        puts(">> Error resolving destination hostname");
         return 1;
     }
 
@@ -240,11 +240,11 @@ int net_client_connect(char *host, int port)
     sock = socket(PF_INET, SOCK_STREAM, 0);
 
     if (sock == -1) {
-       printf(">> Error creating client socket\n");
+       puts(">> Error creating client socket");
     }
 
     if (connect(sock, (struct sockaddr*)&serv, sizeof(serv)) == -1) {
-       printf(">> Error connecting client socket\n");
+       printf(">> Error connecting to Hache service at %s:%d\n", host, port);
        exit(1);
     }
 

@@ -2,11 +2,9 @@
 
 ## What is Hache?
 
-Hache is an experimental in-memory key-value datastore much like Memcached or Redis.
+Hache is an experimental in-memory key-value datastore much like Memcached or Redis. 
 
-<p align="center">
-  <img width="597" height="400" src="https://github.com/samziz/hache/raw/master/misc/cli.png">
-</p>
+![](https://github.com/samziz/hache/raw/master/misc/cli.png)
 
 ## Usage
 

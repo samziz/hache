@@ -13,10 +13,16 @@
 void execute_command(int argc, char **argv)
 {
 	if (!strcmp(argv[1], "service"))
-		net_cmd_handler(argc, argv);
+	{
+		if (!net_cmd_handler(argc, argv))
+			exit(1);
+	}
 
 	else if (!strcmp(argv[1], "shell"))
-		sh_cmd_handler(argc, argv);
+	{
+		if (!sh_cmd_handler(argc, argv))
+			exit(1);
+	}
 
 	else
 		printf(">> Invalid command '%s'\n", argv[1]);
