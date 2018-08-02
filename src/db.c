@@ -1,7 +1,7 @@
+#include "db.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "db.h"
 
 
 /*** INTERNAL FUNCTIONS ***/
@@ -44,7 +44,9 @@ unsigned short ht_count(HashTable *table)
 	for (unsigned short i = 0; i < USHRT_MAX; i++)
 	{
 		if (strlen(table->entries[i].key) != 0)
+		{
 			count++;
+		}
 	}
 
 	return count;
@@ -55,7 +57,6 @@ int ht_get(HashTable *table, char *key, Entry *en)
 	unsigned short hash = ht_hash(key);
 
 	struct Entry en_iter = table->entries[hash];
-	
 	while (en_iter.key)
 	{
 		if (!strcmp(en_iter.key, key))
@@ -85,12 +86,20 @@ int ht_make_table(HashTable *table)
 
 int ht_remove(HashTable *table, char *key)
 {
-	// FIXME: Deal with array pointers allocated in collision cases
+	unsigned short hash = ht_hash(key);
 
-	int hash = ht_hash(key);
-	Entry new = { NULL, NULL };
+	struct Entry *en = &table->entries[hash];
+	
+	while (en->key)
+	{
+		if (!strcmp(en->key, key))
+		{
+			memset(en, 0, sizeof(*en));
+			return 0;
+		}
 
-	table->entries[hash] = new;
+		en = en->next;
+	}
 
-	return 0;
+	return E_DB_DELETE;
 }

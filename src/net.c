@@ -1,3 +1,4 @@
+#include "net.h"
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -10,7 +11,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "disk.h"
-#include "net.h"
 
 
 /*** GLOBALS ***/
@@ -84,7 +84,7 @@ void net_conn_thread(void *ptr)
         if (!strcasecmp(cmd, "GET"))
         {
             struct Entry en;
-            
+
             if (ht_get(table, key, &en) == E_DB_READ)
                 write(conn, "ERROR: E_DB_READ", 17);
 

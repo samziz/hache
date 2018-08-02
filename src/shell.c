@@ -1,3 +1,4 @@
+#include "shell.h"
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <stdio.h>
@@ -5,7 +6,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "net.h"
-#include "shell.h"
 
 /*** GLOBAL ***/
 
@@ -70,7 +70,7 @@ int sh_execute_cmd(char *args, int sock)
 
 		char query[10000];
 		sprintf(query, "GET %s", key);
-
+		printf("%s\n", query);
 		write(sock, query, strlen(query));
 
 		char buf[10000];
