@@ -5,7 +5,7 @@
 Hache is an experimental in-memory key-value datastore much like Memcached or Redis.
 
 <p align="center">
-  <img width="517" height="400" src="https://github.com/samziz/hache/raw/master/misc/cli-img.png">
+  <img width="597" height="400" src="https://github.com/samziz/hache/raw/master/misc/cli.png">
 </p>
 
 ## Usage
