@@ -11,7 +11,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-You'll need a working C compiler. The makefile uses GCC by default but you can substitute another compiler by setting `COMPILER` (e.g. `make compiler=clang`) or by building manually. 
+You'll need a working C compiler. The makefile uses GCC by default but you can substitute another compiler by setting `COMPILER` (e.g. `make COMPILER=clang`) or by building manually. 
 
 You don't need to manually link any libraries. Only POSIX and GNU extensions are expected to be available.
 
@@ -23,7 +23,7 @@ You don't need to manually link any libraries. Only POSIX and GNU extensions are
 
 • Run `make`.
 
-To test if your installation is working, spin up a new local service with `hache service start`. This will listen by default on port 7070. You can access this database by shell with `hache shell start --host localhost --port 7070`. Try setting a key (`SET mykey myvalue`) and then retrieving it (`GET mykey`).
+To test if your installation is working, spin up a new local service with `hache service start`. This will listen by default on port 7070 unless you specify a different port with the `--port` option. You can access this database by shell with `hache shell start --host localhost --port 7070`. Try setting a key (`SET mykey myvalue`) and then retrieving it (`GET mykey`).
 
 
 ## Guide

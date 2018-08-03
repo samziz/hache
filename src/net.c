@@ -20,12 +20,17 @@ struct arg_struct {
     struct HashTable *table;
 };
 
+struct net_opts {
+    int port;
+};
+
 
 /*** FORWARD DECLARATIONS ***/
 
 int net_client_connect(char *host, int port);
+int net_get_opts(int argc, char **argv, struct net_opts *opts);
 int net_kill_local_service(char *name);
-void net_launch_local_service();
+void net_launch_local_service(int port);
 void net_serve(HashTable *table, int port);
 
 
@@ -39,9 +44,14 @@ int net_cmd_handler(int argc, char **argv)
     }
 
     char *mod_cmd = argv[2];
-    
+    struct net_opts opts = {DEFAULT_PORT};
+
+    if (net_get_opts(argc, argv, &opts) != 0) {
+        return E_BAD_OPTS;
+    }
+
     if (!strcasecmp(mod_cmd, "start")) {
-        net_launch_local_service();
+        net_launch_local_service(opts.port);
     }
 
     else if (!strcasecmp(mod_cmd, "stop")) {
@@ -123,12 +133,25 @@ void net_conn_thread(void *ptr)
     close(conn);
 }
 
+int net_get_opts(int argc, char **argv, struct net_opts *opts)
+{
+    for (int i = 0; i < argc; i++)
+    {
+        if (!strcmp("--port", argv[i])) {
+            char *port = argv[i+1];
+            opts->port = atoi(port);
+        }
+    };
+
+    return 0;
+}
+
 int net_kill_local_service(char *name)
 {
     return 0;
 }
 
-void net_launch_local_service()
+void net_launch_local_service(int port)
 {   
     int pid = fork();
 
@@ -143,7 +166,7 @@ void net_launch_local_service()
         pthread_t disk_thread;
         pthread_create(&disk_thread, NULL, (void *)&disk_write_thread, (void*)&table);
 
-        net_serve(&table, 7070);
+        net_serve(&table, port);
         printf(">> Shutting down service\n");
     }
 

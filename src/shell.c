@@ -37,8 +37,9 @@ int sh_cmd_handler(int argc, char **argv)
     char *mod_cmd = argv[2];
     struct shell_opts opts = {DEFAULT_HOST, DEFAULT_PORT};
 
-    if (sh_get_opts(argc, argv, &opts) != 0)
+    if (sh_get_opts(argc, argv, &opts) != 0) {
         return E_BAD_OPTS;
+    }
     
     if (!strcmp(mod_cmd, "start")) {
         sh_launch_interactive(opts.host, opts.port);
