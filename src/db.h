@@ -2,6 +2,7 @@
 #define DB_H
 
 #include <limits.h>
+#include "config.h"
 
 
 /*** ERRORS ***/
@@ -11,12 +12,6 @@
 #define E_DB_WRITE -3
 #define E_DB_DELETE -4
 #define E_DB_ALLOC -5
-
-
-/*** SETTINGS ***/
-
-#define MAX_CHILDREN 50
-#define TABLE_SIZE (USHRT_MAX * sizeof(struct Entry))
 
 
 /*** TYPES ***/

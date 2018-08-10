@@ -1,6 +1,7 @@
 #ifndef DISK_H
 #define DISK_H
 
+#include "config.h"
 #include "db.h"
 
 /*** ERRORS ***/
@@ -12,11 +13,6 @@
 #define E_DISK_MK -5
 #define E_DISK_MK_DIR -6
 #define E_DISK_NOT_A_FILE -7
-
-
-/*** SETTINGS ***/
-
-#define WRITE_INTERVAL_SECS 20
 
 
 /*** INTERFACE FUNCTIONS ***/
