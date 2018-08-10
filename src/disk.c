@@ -55,6 +55,28 @@ int disk_safe_mkdir(char *path)
 
 /*** INTERFACE FUNCTIONS ***/
 
+// Remove a service PID and port from the disk service registry. Supply
+// zero for PID to indicate no argument (we will never have PID 0).
+int disk_deregister_service(int pid, int port)
+{
+	if (!pid) {
+		pid = getpid();
+	}
+    
+    char *fpath = (char*)malloc(sizeof(char) * 100);
+    FILE *file;
+
+    sprintf(fpath, "%s/hache/proc", disk_get_homedir());
+
+    file = fopen(fpath, "w");
+
+    // TODO Delete line that matches PID and port
+
+    fclose(file);
+
+    return 0;
+}
+
 // Create hache/ dir with subdirs in var/ if none exists.
 int disk_format_env()
 {
@@ -71,6 +93,28 @@ int disk_format_env()
 	}
 	
 	return 0;
+}
+
+// Add a service PID and port to the disk service registry. Supply
+// zero for PID to indicate no argument (we will never have PID 0).
+int disk_register_service(int pid, int port)
+{
+	if (!pid) {
+		pid = getpid();
+	}
+
+    char *fpath = (char*)malloc(sizeof(char) * 100);
+    FILE *file;
+
+    sprintf(fpath, "%s/hache/proc", disk_get_homedir());
+
+    file = fopen(fpath, "w");
+
+    fprintf(file, "%u %d %d\n", (unsigned) time(NULL), pid, port);
+
+    fclose(file);
+
+    return 0;
 }
 
 // Reads the most recent dump in ~/hache/dumps/ into memory.
@@ -128,10 +172,6 @@ int disk_write_to_file(HashTable *table)
 int disk_write_thread(void *ptr)
 {
     struct HashTable *table = (struct HashTable *)ptr;
-
-    if (disk_format_env() != 0) {
-    	return E_DISK_FORMAT; /* should call pthread_exit */
-    }
 
     while (1) {
         disk_write_to_file(table);

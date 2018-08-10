@@ -15,7 +15,9 @@
 
 /*** INTERFACE FUNCTIONS ***/
 
+int disk_deregister_service(int pid, int port);
 int disk_format_env();
+int disk_register_service(int pid, int port);
 HashTable *disk_restore_from_file();
 int disk_write_to_file(HashTable *table);
 int disk_write_thread(void *ptr);

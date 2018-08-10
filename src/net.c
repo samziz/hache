@@ -163,6 +163,11 @@ void net_launch_local_service(int port)
             exit(1);
         };
 
+        if (disk_format_env() == E_DISK_FORMAT) {
+            puts(">> Could not format disk for local storage");
+            exit(1);
+        }
+
         pthread_t disk_thread;
         pthread_create(&disk_thread, NULL, (void *)&disk_write_thread, (void*)&table);
 
