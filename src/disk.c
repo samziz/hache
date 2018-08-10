@@ -22,7 +22,7 @@ char *disk_get_homedir()
 
 int disk_safe_mkdir(char *path)
 {
-	static struct stat st = {0};
+	struct stat st = {0};
 
 	if (stat(path, &st) == -1) {
 		errno = 0;
@@ -180,20 +180,16 @@ HashTable *disk_restore_from_file()
 
 	file = fopen(fname, "r");
 
-	char buf[10000];
-    memset(buf, 0, 10000);
+	char buf[MAX_ENTRY_SIZE];
+    memset(buf, 0, MAX_ENTRY_SIZE);
 
-	while (fgets(buf, 10000, file) > 0) {
-		char *index = strtok(buf, " ");
+	while (fgets(buf, MAX_ENTRY_SIZE, file) > 0) {
 		char *key = strtok(buf, " ");
 		char *value = strtok(NULL, "\n");
 
-		int i = atoi(index);
+		ht_add(table, key, value);
 
-		Entry en = {key, value};
-		table->entries[i] = en;
-
-		memset(buf, 0, 10000);
+		memset(buf, 0, MAX_ENTRY_SIZE);
 	}
 
 	fclose(file);
@@ -203,7 +199,7 @@ HashTable *disk_restore_from_file()
 // Writes in-memory data to ~/hache/dumps/ in case of crash.
 int disk_write_to_file(HashTable *table)
 {
-	char fname[10000];
+	char fname[MAX_ENTRY_SIZE];
 	FILE *file;
 
 	sprintf(fname, "%s/%u.hcdump", disk_get_homedir(), (unsigned) time(NULL));
@@ -212,12 +208,13 @@ int disk_write_to_file(HashTable *table)
 
 	for (unsigned short i = 0; i < USHRT_MAX; i++) {	
 		if (table->entries[i].key) {
-			fprintf(file, "%d %s %s\n", i, table->entries[i].key, table->entries[i].value);
+			char *key = (char*)table->entries[i].key;
+			char *value = (char*)table->entries[i].value;
+			fprintf(file, "%s %s\n", key, value);
 		}
 	}
 
 	fclose(file);
-	free(fname);
 	return 0;
 }
 
