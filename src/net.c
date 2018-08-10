@@ -80,7 +80,7 @@ void net_conn_thread(void *ptr)
         return;
     }
 
-    char *buf = malloc(10000);
+    char buf[10000];
     memset(buf, 0, 10000);
 
     while (read(conn, buf, 10000) > 0) {
@@ -130,7 +130,6 @@ void net_conn_thread(void *ptr)
         write(conn, "ERROR", 6);
     }
 
-    free(buf);
     close(conn);
 }
 
