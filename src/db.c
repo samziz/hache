@@ -29,8 +29,17 @@ unsigned short ht_hash(char *key)
 int ht_add(HashTable *table, char *key, char *value)
 {
 	unsigned short hash = ht_hash(key);
+	const size_t key_size = sizeof(key) / sizeof(key[0]);
+	const size_t value_size = sizeof(value) / sizeof(value[0]);
 
-	Entry en = { key, value };
+	void *key_ptr = malloc(key_size);
+	void *value_ptr = malloc(value_size);
+
+	memcpy(key_ptr, (void*)key, key_size);
+	memcpy(value_ptr, (void*)value, value_size);
+
+	Entry en = { key_ptr, value_ptr };
+
 	table->entries[hash] = en;
 
 	return 0;
@@ -56,7 +65,7 @@ int ht_get(HashTable *table, char *key, Entry *en)
 	struct Entry en_iter = table->entries[hash];
 	
 	while (en_iter.key) {
-		if (!strcmp(en_iter.key, key)) {
+		if (!strcmp((char*)en_iter.key, key)) {
 			en->value = en_iter.value;
 			return 0;
 		}
@@ -88,7 +97,9 @@ int ht_remove(HashTable *table, char *key)
 	struct Entry *en = &table->entries[hash];
 	
 	while (en->key) {
-		if (!strcmp(en->key, key)) {
+		if (!strcmp((char*)en->key, key)) {
+			free(en->key);
+			free(en->value);
 			memset(en, 0, sizeof(*en));
 			return 0;
 		}

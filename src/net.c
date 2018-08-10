@@ -80,10 +80,10 @@ void net_conn_thread(void *ptr)
         return;
     }
 
-    char buf[10000];
-    memset(buf, 0, 10000);
+    char buf[MAX_ENTRY_SIZE];
+    memset(buf, 0, MAX_ENTRY_SIZE);
 
-    while (read(conn, buf, 10000) > 0) {
+    while (read(conn, buf, MAX_ENTRY_SIZE) > 0) {
 
         // Strip trailing newline
         if (buf[strlen(buf)-1] == 10) {
@@ -101,7 +101,8 @@ void net_conn_thread(void *ptr)
             }
 
             else {
-                write(conn, en.value, 10000);
+                char *value = (char*)en.value;
+                write(conn, value, strlen(value));
             }
 
             continue;

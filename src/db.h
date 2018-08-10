@@ -17,8 +17,8 @@
 /*** TYPES ***/
 
 typedef struct Entry {
-	char *key;
-	char *value;
+	void *key;
+	void *value;
 	struct Entry *next;
 } Entry;
 
