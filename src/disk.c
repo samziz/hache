@@ -117,15 +117,13 @@ int disk_deregister_service(int pid, int port)
 		pid = getpid();
 	}
     
-    char *dirpath = (char*)malloc(PATH_MAX);
+    char dirpath[PATH_MAX];
     sprintf(dirpath, "%s/hache/proc/%d", disk_get_homedir(), pid);
 
     if (disk_safe_rmdir(dirpath) == E_DISK_RM_DIR) {
-    	free(dirpath);
     	return E_DISK_RM_DIR;
     }
 
-    free(dirpath);
     return 0;
 }
 
@@ -155,7 +153,7 @@ int disk_register_service(int pid, int port)
 		pid = getpid();
 	}
 
-    char *fpath = (char*)malloc(PATH_MAX);
+    char fpath[PATH_MAX];
     FILE *file;
 
     sprintf(fpath, "%s/hache/proc/%d", disk_get_homedir(), pid);
@@ -166,7 +164,6 @@ int disk_register_service(int pid, int port)
     file = fopen(fpath, "w");
     fprintf(file, "TIME: %u\nPORT: %d\n", (unsigned) time(NULL), port);
     	
-    free(fpath);
     fclose(file);
 
     return 0;
@@ -183,7 +180,7 @@ HashTable *disk_restore_from_file()
 
 	file = fopen(fname, "r");
 
-	char *buf = malloc(10000);
+	char buf[10000];
     memset(buf, 0, 10000);
 
 	while (fgets(buf, 10000, file) > 0) {
@@ -200,14 +197,13 @@ HashTable *disk_restore_from_file()
 	}
 
 	fclose(file);
-	free(buf);
 	return table;
 }
 
 // Writes in-memory data to ~/hache/dumps/ in case of crash.
 int disk_write_to_file(HashTable *table)
 {
-	char *fname = (char*)malloc(sizeof(char) * 100);
+	char fname[10000];
 	FILE *file;
 
 	sprintf(fname, "%s/%u.hcdump", disk_get_homedir(), (unsigned) time(NULL));
