@@ -4,7 +4,6 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "main.h"
 #include "net.h"
 #include "shell.h"
 

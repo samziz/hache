@@ -130,6 +130,7 @@ void net_conn_thread(void *ptr)
         write(conn, "ERROR", 6);
     }
 
+    free(buf);
     close(conn);
 }
 

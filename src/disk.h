@@ -7,6 +7,12 @@
 
 #define E_DISK_DATACORRUPTED -1
 #define E_DISK_FORMAT -2
+#define E_DISK_RM -3
+#define E_DISK_RM_DIR -4
+#define E_DISK_MK -5
+#define E_DISK_MK_DIR -6
+#define E_DISK_NOT_A_FILE -7
+
 
 /*** SETTINGS ***/
 

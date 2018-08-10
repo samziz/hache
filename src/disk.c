@@ -1,5 +1,7 @@
 #include "disk.h"
 #include <fcntl.h>
+#include <ftw.h>
+#include <limits.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,26 +30,78 @@ int disk_safe_mkdir(char *path)
 		if (mkdir(path, S_IRWXU) == 0)
 			return 0;
 
+		// Log all likely error codes
 		switch (errno) {
 			case EACCES:
 				printf(">> EACCES error making directory %s\n", path);
 				break;
-			case ENAMETOOLONG:
-				printf(">> ENAMETOOLONG error making directory %s\n", path);
-				break;
 			case ENOENT:
 				printf(">> ENOENT error making directory %s\n", path);
-				break;
-			case ENOTDIR:
-				printf(">> ENOTDIR error making directory %s\n", path);
-				break;
-			case EROFS:
-				printf(">> EROFS error making directory %s\n", path);
 				break;
 		}
 
 		return E_DISK_FORMAT;
 	}
+
+	return 0;
+}
+
+int disk_safe_rm(const char *path, const struct stat *stat, int type, struct FTW *ftw)
+{
+	errno = 0;
+
+	if (type == FTW_D) {
+		if (rmdir(path) != 0) {
+			// Log all likely error codes
+			switch (errno) {
+				case EACCES:
+					printf(">> EACCES error removing file %s\n", path);
+					break;
+				case EBUSY:
+					printf(">> EBUSY error removing file %s\n", path);
+					break;
+				case EEXIST:
+				case ENOTEMPTY:
+					printf(">> EEXIST/ENOTEMPTY error removing file %s\n", path);
+					break;
+			}
+
+			return E_DISK_RM;
+		}
+	}
+
+	if (type == FTW_F) {
+		if (unlink(path) != 0) {
+			// Log all likely error codes
+			switch (errno) {
+				case EACCES:
+					printf(">> EACCES error removing file %s\n", path);
+					break;
+				case EBUSY:
+					printf(">> EBUSY error removing file %s\n", path);
+					break;
+				case ENOENT:
+					printf(">> ENOENT error removing file %s\n", path);
+					break;
+			}
+
+			return E_DISK_RM;
+		};
+	}
+
+	else {
+		// We don't want to deal with objects that aren't files or directories.
+		return E_DISK_RM;
+	}
+
+	return 0;
+}
+
+int disk_safe_rmdir(char *path)
+{	
+	if (nftw(path, *disk_safe_rm, 100, FTW_DEPTH) != 0) {
+		return E_DISK_RM_DIR;
+	};
 
 	return 0;
 }
@@ -63,17 +117,15 @@ int disk_deregister_service(int pid, int port)
 		pid = getpid();
 	}
     
-    char *fpath = (char*)malloc(sizeof(char) * 100);
-    FILE *file;
+    char *dirpath = (char*)malloc(PATH_MAX);
+    sprintf(dirpath, "%s/hache/proc/%d", disk_get_homedir(), pid);
 
-    sprintf(fpath, "%s/hache/proc", disk_get_homedir());
+    if (disk_safe_rmdir(dirpath) == E_DISK_RM_DIR) {
+    	free(dirpath);
+    	return E_DISK_RM_DIR;
+    }
 
-    file = fopen(fpath, "w");
-
-    // TODO Delete line that matches PID and port
-
-    fclose(file);
-
+    free(dirpath);
     return 0;
 }
 
@@ -103,15 +155,18 @@ int disk_register_service(int pid, int port)
 		pid = getpid();
 	}
 
-    char *fpath = (char*)malloc(sizeof(char) * 100);
+    char *fpath = (char*)malloc(PATH_MAX);
     FILE *file;
 
-    sprintf(fpath, "%s/hache/proc", disk_get_homedir());
-
+    sprintf(fpath, "%s/hache/proc/%d", disk_get_homedir(), pid);
+    disk_safe_mkdir(fpath);
+    
+    strcat(fpath, "/status");
+    
     file = fopen(fpath, "w");
-
-    fprintf(file, "%u %d %d\n", (unsigned) time(NULL), pid, port);
-
+    fprintf(file, "TIME: %u\nPORT: %d\n", (unsigned) time(NULL), port);
+    	
+    free(fpath);
     fclose(file);
 
     return 0;
@@ -145,6 +200,7 @@ HashTable *disk_restore_from_file()
 	}
 
 	fclose(file);
+	free(buf);
 	return table;
 }
 
@@ -165,7 +221,7 @@ int disk_write_to_file(HashTable *table)
 	}
 
 	fclose(file);
-
+	free(fname);
 	return 0;
 }
 
