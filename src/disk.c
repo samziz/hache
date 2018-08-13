@@ -20,6 +20,35 @@ char *disk_get_homedir()
 	return (char*) pw->pw_dir;
 }
 
+// disk_fread reads from a binary file into a section of memory (ptr)
+// until it encounters a specific series of bytes (terminator). It
+// then returns the number of bytes read.
+int disk_fread(void *ptr, const char *terminator, int offset, FILE *file)
+{
+	char buf[MAX_ENTRY_SIZE];
+	
+	int count = 0;
+	const int TERM_LEN = strlen(terminator);
+
+	char *match = (char*) calloc(TERM_LEN, sizeof(char));
+	int match_ind = 0;
+
+	// Apply offset from beginning of file
+	fseek(file, offset, SEEK_CUR);
+
+	while (!match[TERM_LEN-1]) {
+		fread(&buf, 1, 1, file);
+		count += 1;
+
+		if (buf[count] == terminator[match_ind]) {
+			match[match_ind] = buf[count];
+			match_ind += 1;
+		}
+	}
+
+	return 0;
+}
+
 int disk_safe_mkdir(char *path)
 {
 	struct stat st = {0};
@@ -173,19 +202,23 @@ int disk_register_service(int pid, int port)
 HashTable *disk_restore_from_file()
 {
 	char *fname;
-	HashTable *table;
 	FILE *file;
+	HashTable *table;
+	int offset = 0;
 
 	table = (struct HashTable*) malloc(sizeof(struct HashTable));
 
-	file = fopen(fname, "r");
+	file = fopen(fname, "rb");
 
 	char buf[MAX_ENTRY_SIZE];
     memset(buf, 0, MAX_ENTRY_SIZE);
 
 	while (fgets(buf, MAX_ENTRY_SIZE, file) > 0) {
-		char *key = strtok(buf, " ");
-		char *value = strtok(NULL, "\n");
+		char key[MAX_KEY_SIZE];
+		offset += disk_fread(key, BIN_TERM, offset, file);
+
+		char value[MAX_VALUE_SIZE];
+		offset += disk_fread(value, BIN_TERM, offset, file);
 
 		ht_add(table, key, value);
 
@@ -204,13 +237,16 @@ int disk_write_to_file(HashTable *table)
 
 	sprintf(fname, "%s/%u.hcdump", disk_get_homedir(), (unsigned) time(NULL));
 
-	file = fopen(fname, "w");
+	file = fopen(fname, "wb");
 
 	for (unsigned short i = 0; i < USHRT_MAX; i++) {	
 		if (table->entries[i].key) {
-			char *key = (char*)table->entries[i].key;
+			char *key = (char*)table->entries[i].key;	
 			char *value = (char*)table->entries[i].value;
-			fprintf(file, "%s %s\n", key, value);
+			char str[MAX_ENTRY_SIZE];
+			
+			sprintf(str, "%s%s%s%s", key, BIN_TERM, value, BIN_TERM);
+			fwrite(str, sizeof(char), sizeof(str), file);
 		}
 	}
 
